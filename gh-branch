@@ -8,19 +8,19 @@ query ($owner: String!, $repo: String!) {
       nodes {
         name
         target {
-								  ... on Commit {
-										  history(first: 1) {
-										    edges {
-														  node {
-																  message
-																}
-														}
-												}
-										}
-								}
-						}
-				}
-		}
+          ... on Commit {
+            history(first: 1) {
+              edges {
+                node {
+                  message
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }' --template '
 {{- range .data.repository.refs.nodes -}}
   {{- .name | printf "%-30s\t" -}}
