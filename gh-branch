@@ -1,51 +1,70 @@
 #!/bin/bash
 set -e
 
-echo "Hello gh-branch!"
-
-gh api graphql -F owner='{owner}' -F repo='{repo}' -f query='
+remote_branch=$(gh api graphql -F owner='{owner}' -F repo='{repo}' -f query='
       query ($owner: String!, $repo: String!) {
         repository(owner: $owner, name: $repo) {
           refs(first: 50, refPrefix: "refs/heads/") {
             nodes {
               name
+														target {
+          						... on Commit {
+            						history(first: 1) {
+																				edges {
+																						node {
+																								message
+																						}
+																				}
+																		}
+																}
+													 }
             }
           }
         }
       }
     ' --template '
       {{- range .data.repository.refs.nodes -}}
-        {{- .name | printf "%s\n" -}}
+        {{- .name | printf "%-30s\t" -}}
+        {{- range .target.history.edges -}}
+				  				{{- .node.message | printf "%-50s\n" -}}
+        {{- end -}}
       {{- end -}}
-    '
+    ' | peco | cut -f 1)
 
-# Snippets to help get started:
+git checkout origin/$remote_branch
 
-# Determine if an executable is in the PATH
-# if ! type -p ruby >/dev/null; then
-#   echo "Ruby not found on the system" >&2
-#   exit 1
-# fi
-
-# Pass arguments through to another command
-# gh issue list "$@" -R cli/cli
-
-# Using the gh api command to retrieve and format information
-# QUERY='
-#   query($endCursor: String) {
-#     viewer {
-#       repositories(first: 100, after: $endCursor) {
-#         nodes {
-#           nameWithOwner
-#           stargazerCount
-#         }
-#       }
-#     }
-#   }
-# '
-# TEMPLATE='
-#   {{- range $repo := .data.viewer.repositories.nodes -}}
-#     {{- printf "name: %s - stargazers: %v\n" $repo.nameWithOwner $repo.stargazerCount -}}
-#   {{- end -}}
-# '
-# exec gh api graphql -f query="${QUERY}" --paginate --template="${TEMPLATE}"
+#remote_branch=$(gh api graphql -F owner='{owner}' -F repo='{repo}' -f query='
+#      query ($owner: String!, $repo: String!) {
+#        repository(owner: $owner, name: $repo) {
+#          refs(first: 50, refPrefix: "refs/heads/") {
+#            nodes {
+#              name
+#														target {
+#          						... on Commit {
+#            						history(first: 1) {
+#																				edges {
+#																						node {
+#																								message
+#																								author {
+#																										name
+#																										date
+#																								}
+#																						}
+#																				}
+#																		}
+#																}
+#													 }
+#            }
+#          }
+#        }
+#      }
+#    ' --template '
+#      {{- range .data.repository.refs.nodes -}}
+#        {{- .name | printf "%-30s\t" -}}
+#        {{- range .target.history.edges -}}
+#				  				{{- .node.message | printf "%-50s\t" -}}
+#          {{- .node.author.name | printf "%-10s\t" -}}
+#          {{- .node.author.date | printf "%-20s\n" -}}
+#        {{- end -}}
+#      {{- end -}}
+#    ' | peco | cut -f 1)
