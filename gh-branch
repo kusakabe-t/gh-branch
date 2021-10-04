@@ -32,39 +32,3 @@ remote_branch=$(gh api graphql -F owner='{owner}' -F repo='{repo}' -f query='
     ' | peco | cut -f 1)
 
 git checkout origin/$remote_branch
-
-#remote_branch=$(gh api graphql -F owner='{owner}' -F repo='{repo}' -f query='
-#      query ($owner: String!, $repo: String!) {
-#        repository(owner: $owner, name: $repo) {
-#          refs(first: 50, refPrefix: "refs/heads/") {
-#            nodes {
-#              name
-#														target {
-#          						... on Commit {
-#            						history(first: 1) {
-#																				edges {
-#																						node {
-#																								message
-#																								author {
-#																										name
-#																										date
-#																								}
-#																						}
-#																				}
-#																		}
-#																}
-#													 }
-#            }
-#          }
-#        }
-#      }
-#    ' --template '
-#      {{- range .data.repository.refs.nodes -}}
-#        {{- .name | printf "%-30s\t" -}}
-#        {{- range .target.history.edges -}}
-#				  				{{- .node.message | printf "%-50s\t" -}}
-#          {{- .node.author.name | printf "%-10s\t" -}}
-#          {{- .node.author.date | printf "%-20s\n" -}}
-#        {{- end -}}
-#      {{- end -}}
-#    ' | peco | cut -f 1)
